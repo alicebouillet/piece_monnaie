@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="theme-color" content="#FFF5F0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="CoinCollection">
+<link rel="manifest" href="manifest.json">
+<title>Collection de pièce </title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ONBOARDING -->
+<div id="onboarding">
+  <div class="ob-card">
+    <span class="ob-mascot">🪙</span>
+    <div class="ob-title">CoinCollection</div>
+    <div class="ob-sub">Ton Pokédex de pièces de monnaie !</div>
+    <div class="ob-steps">
+      <div class="ob-step">
+        <div class="ob-step-num">1</div>
+        <div>Va sur <a href="https://console.mistral.ai" target="_blank">console.mistral.ai</a> et crée un compte gratuit 🇫🇷</div>
+      </div>
+      <div class="ob-step">
+        <div class="ob-step-num">2</div>
+        <div>Dans <strong>API Keys</strong> → crée une clé et copie-la</div>
+      </div>
+      <div class="ob-step">
+        <div class="ob-step-num">3</div>
+        <div>Colle-la ici et commence à collecter !</div>
+      </div>
+    </div>
+    <div class="key-wrap">
+      <input class="key-input" id="apiKeyInput" type="password" placeholder="Colle ta clé Mistral ici…">
+      <button class="toggle-vis" onclick="toggleKey()">👁️</button>
+    </div>
+    <button class="btn-go" onclick="startApp()">C'est parti ! 🚀</button>
+    <div class="privacy">🔒 Ta clé reste sur ton téléphone uniquement.<br>Seules les photos partent chez Mistral AI 🇫🇷 pour analyse.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+  <div class="app-header">
+    <div class="app-logo">🪙 CoinCollection</div>
+    <div class="header-stats">
+      <div class="hstat"><div class="hstat-val" id="statTotal">0</div><div class="hstat-lbl">Pièces</div></div>
+      <div class="hstat"><div class="hstat-val" id="statCountries">0</div><div class="hstat-lbl">Pays</div></div>
+    </div>
+  </div>
+
+  <div class="page active" id="page-identify">
+    <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+      <img id="previewImg" alt="">
+      <span class="upload-emoji" id="uploadEmoji">📸</span>
+      <div class="upload-txt"><strong>Prends une photo de ta pièce !</strong>Appuie ici pour choisir une image</div>
+    </div>
+    <input type="file" id="fileInput" accept="image/*" capture="environment">
+    <button class="btn-identify" id="identifyBtn" disabled onclick="identify()">🔍 Identifier cette pièce !</button>
+    <div class="loading-pills" id="loadingPills">
+      <span class="pill"></span><span class="pill"></span><span class="pill"></span>
+      <span>Mistral analyse ta pièce…</span>
+    </div>
+    <div class="error-pill" id="errorPill"></div>
+    <div class="result-card" id="resultCard">
+      <div class="result-hero">
+        <span class="result-big-flag" id="rFlag">🪙</span>
+        <div class="result-country-name" id="rCountry"></div>
+        <div id="rBadge"></div>
+      </div>
+      <div class="result-body">
+        <div class="result-chips" id="rChips"></div>
+        <div class="result-desc" id="rDesc"></div>
+        <button class="btn-add" id="addBtn" onclick="addToCollection()">✨ Ajouter à ma collection !</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="page" id="page-pokedex">
+    <div class="pokedex-header">
+      <div class="pokedex-title">🗺️ Mon Pokédex</div>
+      <div class="pokedex-count" id="pokedexCount">0 pays</div>
+    </div>
+    <input class="search-box" id="searchInput" placeholder="🔍 Rechercher un pays, une pièce…" oninput="renderPokedex()">
+    <div id="pokedexList"></div>
+  </div>
+
+  <div class="page" id="page-settings">
+    <div class="settings-group">
+      <div class="settings-group-title">🔑 Clé API</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div><div class="settings-row-title">Clé Mistral active</div><div class="settings-row-sub" id="keyPreview">—</div></div>
+          <button class="btn-sm" onclick="changeKey()">Modifier</button>
+        </div>
+      </div>
+    </div>
+    <div class="settings-group">
+      <div class="settings-group-title">🤖 Modèle IA</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div><div class="settings-row-title">Pixtral 12B</div><div class="settings-row-sub">Mistral AI 🇫🇷 · Reconnaissance d'images</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="settings-group">
+      <div class="settings-group-title">🗂️ Collection</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div><div class="settings-row-title">Tout effacer</div><div class="settings-row-sub">Supprime toutes tes pièces</div></div>
+          <button class="btn-sm btn-sm-danger" onclick="clearCollection()">Effacer</button>
+        </div>
+      </div>
+    </div>
+    <div class="settings-group">
+      <div class="settings-group-title">🔒 Confidentialité</div>
+      <div class="settings-card">
+        <div class="settings-row">
+          <div>
+            <div class="settings-row-title">Tes données restent chez toi</div>
+            <div class="settings-row-sub" style="max-width:280px">Clé API et collection stockées localement sur ton téléphone. Seules les photos sont envoyées à Mistral AI (France 🇫🇷) pour analyse.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-nav">
+    <button class="nav-btn active" id="nav-identify" onclick="switchTab('identify')">
+      <span class="nav-icon">🔍</span><span class="nav-label">Identifier</span>
+    </button>
+    <button class="nav-btn" id="nav-pokedex" onclick="switchTab('pokedex')">
+      <span class="nav-icon">🗺️</span><span class="nav-label">Pokédex</span>
+    </button>
+    <button class="nav-btn" id="nav-settings" onclick="switchTab('settings')">
+      <span class="nav-icon">⚙️</span><span class="nav-label">Réglages</span>
+    </button>
+  </div>
+</div>
+
+<script src="js/scripts.js"></script>
+</body>
+</html>
