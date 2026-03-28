@@ -4,8 +4,9 @@ let imageBase64 = null;
 let imageType = 'image/jpeg';
 
 window.addEventListener('DOMContentLoaded', () => {
-  const key = localStorage.getItem('mistral_key') || '';
-  launchApp(key);
+  const url = localStorage.getItem('server_url') || 'https://lcbllt-coincollection.hf.space';
+  localStorage.setItem('server_url', url);
+  launchApp(url);
 });
 
 function toggleKey() {
