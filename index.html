@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="CoinCollection">
 <link rel="manifest" href="manifest.json">
-<title>Collection de pièce </title>
+<title>Collection de pièces</title>
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Fredoka+One&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
@@ -23,23 +23,22 @@
     <div class="ob-steps">
       <div class="ob-step">
         <div class="ob-step-num">1</div>
-        <div>Va sur <a href="https://console.mistral.ai" target="_blank">console.mistral.ai</a> et crée un compte gratuit 🇫🇷</div>
+        <div>L'IA tourne sur ton serveur personnel 🔒</div>
       </div>
       <div class="ob-step">
         <div class="ob-step-num">2</div>
-        <div>Dans <strong>API Keys</strong> → crée une clé et copie-la</div>
+        <div>Vérifie que l'adresse du serveur ci-dessous est correcte</div>
       </div>
       <div class="ob-step">
         <div class="ob-step-num">3</div>
-        <div>Colle-la ici et commence à collecter !</div>
+        <div>Appuie sur <strong>Connecter</strong> et commence à collecter !</div>
       </div>
     </div>
     <div class="key-wrap">
-     <input class="key-input" id="serverUrlInput" type="text" placeholder="ex: https://lcbllt-coincollection.hf.space" value="https://lcbllt-coincollection.hf.space" autocomplete="off" autocapitalize="off">
-      <button class="toggle-vis" onclick="toggleKey()">👁️</button>
+      <input class="key-input" id="serverUrlInput" type="text" placeholder="ex: https://lcbllt-coincollection.hf.space" value="https://lcbllt-coincollection.hf.space" autocomplete="off" autocapitalize="off">
     </div>
-    <button class="btn-go" onclick="startApp()">C'est parti ! 🚀</button>
-    <div class="privacy">🔒 Ta clé reste sur ton téléphone uniquement.<br>Seules les photos partent chez Mistral AI 🇫🇷 pour analyse.</div>
+    <button class="btn-go" onclick="startApp()">Connecter ! 🚀</button>
+    <div class="privacy">🔒 100% privé — ton modèle ML tourne sur ton serveur.<br>Aucune donnée envoyée à des tiers.</div>
   </div>
 </div>
 
@@ -64,7 +63,7 @@
     <button class="btn-manual" id="manualBtn" onclick="manualAdd()">➕ Ajouter manuellement</button>
     <div class="loading-pills" id="loadingPills">
       <span class="pill"></span><span class="pill"></span><span class="pill"></span>
-      <span>Mistral analyse ta pièce…</span>
+      <span>Analyse de la pièce en cours…</span>
     </div>
     <div class="error-pill" id="errorPill"></div>
     <div class="result-card" id="resultCard">
@@ -92,10 +91,13 @@
 
   <div class="page" id="page-settings">
     <div class="settings-group">
-      <div class="settings-group-title">🔑 Clé API</div>
+      <div class="settings-group-title">🖥️ Serveur</div>
       <div class="settings-card">
         <div class="settings-row">
-          <div><div class="settings-row-title">Clé Mistral active</div><div class="settings-row-sub" id="keyPreview">—</div></div>
+          <div>
+            <div class="settings-row-title">Adresse du serveur</div>
+            <div class="settings-row-sub" id="keyPreview">—</div>
+          </div>
           <button class="btn-sm" onclick="changeKey()">Modifier</button>
         </div>
       </div>
@@ -104,7 +106,10 @@
       <div class="settings-group-title">🤖 Modèle IA</div>
       <div class="settings-card">
         <div class="settings-row">
-          <div><div class="settings-row-title">Pixtral 12B</div><div class="settings-row-sub">Mistral AI 🇫🇷 · Reconnaissance d'images</div></div>
+          <div>
+            <div class="settings-row-title">EfficientNetB0 + Feature Matching</div>
+            <div class="settings-row-sub">Tourne sur ton serveur · 100% local 🔒</div>
+          </div>
         </div>
       </div>
     </div>
@@ -122,8 +127,8 @@
       <div class="settings-card">
         <div class="settings-row">
           <div>
-            <div class="settings-row-title">Tes données restent chez toi</div>
-            <div class="settings-row-sub" style="max-width:280px">Clé API et collection stockées localement sur ton téléphone. Seules les photos sont envoyées à Mistral AI (France 🇫🇷) pour analyse.</div>
+            <div class="settings-row-title">100% privé, 100% local</div>
+            <div class="settings-row-sub" style="max-width:280px">Ton modèle ML tourne sur ton serveur Hugging Face. Ta collection est stockée uniquement sur ton téléphone. Aucune donnée partagée avec des tiers.</div>
           </div>
         </div>
       </div>
