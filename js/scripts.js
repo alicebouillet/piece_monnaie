@@ -4,8 +4,8 @@ let imageBase64 = null;
 let imageType = 'image/jpeg';
 
 window.addEventListener('DOMContentLoaded', () => {
-  const key = localStorage.getItem('mistral_key');
-  if (key) launchApp(key);
+  const key = localStorage.getItem('mistral_key') || '';
+  launchApp(key);
 });
 
 function toggleKey() {
@@ -29,7 +29,8 @@ function launchApp(key) {
 }
 
 function updateKeyPreview(k) {
-  document.getElementById('keyPreview').textContent = k.substring(0,8) + '••••••••';
+  if (k) document.getElementById('keyPreview').textContent = k.substring(0,8) + '••••••••';
+  else document.getElementById('keyPreview').textContent = '—';
 }
 
 function switchTab(name) {
@@ -59,37 +60,29 @@ document.getElementById('fileInput').addEventListener('change', function() {
 
 async function identify() {
   if (!imageBase64) return;
-  const key = localStorage.getItem('mistral_key');
-  if (!key) { changeKey(); return; }
+  const localUrl = 'http://127.0.0.1:5000/identify';
   document.getElementById('identifyBtn').disabled = true;
   document.getElementById('loadingPills').classList.add('visible');
   document.getElementById('resultCard').classList.remove('visible');
   document.getElementById('errorPill').classList.remove('visible');
   try {
-    const res = await fetch('https://api.mistral.ai/v1/chat/completions', {
+    const resLocal = await fetch(localUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
-      body: JSON.stringify({
-        model: 'pixtral-12b-2409',
-        max_tokens: 800,
-        messages: [{
-          role: 'user',
-          content: [
-            { type: 'image_url', image_url: { url: `data:${imageType};base64,${imageBase64}` } },
-            { type: 'text', text: `Tu es un expert numismate. Analyse cette pièce et réponds UNIQUEMENT avec un JSON valide sans markdown ni backticks :
-{"country":"Nom du pays en français","flag":"Emoji drapeau","year":"Année estimée","denomination":"Valeur faciale ex: 1 Euro","currency":"Devise","condition":"Neuve ou Très bien ou Bien ou Usée","description":"2-3 phrases sur cette pièce","confidence":"haute ou moyenne ou faible"}
-Si ce n'est pas une pièce, mets country: "Inconnu".` }
-          ]
-        }]
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageData: `data:${imageType};base64,${imageBase64}` })
     });
-    if (!res.ok) { const e = await res.json(); throw new Error(e.message || 'Erreur API'); }
-    const data = await res.json();
-    currentResult = JSON.parse(data.choices[0].message.content.replace(/```json|```/g,'').trim());
-    showResult(currentResult);
-  } catch(err) {
+    if (resLocal.ok) {
+      currentResult = await resLocal.json();
+      showResult(currentResult);
+    } else {
+      const err = await resLocal.json().catch(()=>({}));
+      const box = document.getElementById('errorPill');
+      box.textContent = '❌ Serveur local retourné une erreur — vérifie server.py: ' + (err.error||resLocal.statusText||resLocal.status);
+      box.classList.add('visible');
+    }
+  } catch (err) {
     const box = document.getElementById('errorPill');
-    box.textContent = err.message.includes('401') ? '❌ Clé API invalide — va dans Réglages.' : '❌ ' + err.message;
+    box.textContent = '❌ Serveur local introuvable — lance `python server.py` dans l\'env (`env_monnaie`)';
     box.classList.add('visible');
   } finally {
     document.getElementById('loadingPills').classList.remove('visible');
@@ -126,6 +119,18 @@ function addToCollection() {
   collection.unshift({ ...currentResult, id: Date.now(), addedAt: new Date().toLocaleDateString('fr-FR') });
   save(); updateStats(); showResult(currentResult);
   setTimeout(() => switchTab('pokedex'), 500);
+}
+
+function manualAdd() {
+  const country = (prompt('Pays (ex: France) :') || '').trim();
+  if (!country) return;
+  const denomination = (prompt('Valeur faciale (ex: 2 €) :') || '').trim() || '?';
+  const year = (prompt("Année (ex: 2002) :") || '').trim();
+  const condition = (prompt('État (Neuve / Très bien / Bien / Usée) :') || '').trim() || '—';
+  const description = (prompt('Description courte (optionnel) :') || '').trim();
+  const flag = (prompt('Emoji drapeau (optionnel) :') || '').trim() || '🪙';
+  currentResult = { country, flag, year, denomination, currency: 'Euro', condition, description, confidence: 'haute' };
+  addToCollection();
 }
 
 function renderPokedex() {
