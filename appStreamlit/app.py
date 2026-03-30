@@ -2,22 +2,11 @@ import streamlit as st
 import pandas as pd
 from PIL import Image
 import os
-# -------------------------
-# Chargement données
-# -------------------------
-@st.cache_data
-def load_data():
-    return pd.read_csv("appStreamlit/data/coins.csv")
+import pydeck as pdk
+import tempfile
+from modele import predict_streamlit
 
-df = load_data()
-
-st.set_page_config(
-    page_title="💰 Ma collection de pièces euro",  
-    layout="wide",                  
-    initial_sidebar_state="expanded" 
-)
-
-st.title("💰 Ma collection de pièces euro")
+st.set_page_config(page_title="Collection Euro", layout="wide")
 
 # Mapping noms français -> codes pays ISO2
 COUNTRY_CODE_FR = {
@@ -69,6 +58,42 @@ def country_name_to_flag(name: str) -> str:
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
+@st.cache_data
+def load_data():
+    return pd.read_csv("appStreamlit/data/coins.csv")
+
+df = load_data()
+
+st.title("💰 Ma collection de pièces euro")
+
+# -------------------------
+# IA
+# -------------------------
+st.subheader("🤖 Reconnaissance automatique")
+
+uploaded_file = st.file_uploader("Upload une pièce", type=["jpg", "png"])
+
+if uploaded_file:
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".jpg") as tmp:
+        tmp.write(uploaded_file.read())
+        temp_path = tmp.name
+
+    st.image(uploaded_file, width=200)
+
+    prediction, score = predict_streamlit(temp_path)
+
+    st.success(f"🪙 {prediction}")
+    st.write(f"Score : {score:.4f}")
+
+    if score < 0.5:
+        st.warning("⚠️ Prédiction incertaine")
+
+    if st.button("➕ Ajouter à ma collection"):
+        mask = df["image"].str.contains(prediction)
+        df.loc[mask, "possedee"] = 1
+        df.to_csv("appStreamlit/data/coins.csv", index=False)
+        st.success("Ajoutée !")
+
 # -------------------------
 # Filtres
 # -------------------------
@@ -95,13 +120,10 @@ if option == "Possédées":
     filtre = filtre[filtre["possedee"] == 1]
 elif option == "Manquantes":
     filtre = filtre[filtre["possedee"] == 0]
-
 # -------------------------
-# Affichage
+# AFFICHAGE CLASSIQUE
 # -------------------------
-# -------------------------
-# Affichage par pays
-# -------------------------
+st.subheader("🪙 Collection")
 for pays_nom in sorted(filtre["pays"].unique()):
     
     st.subheader(f"{country_name_to_flag(pays_nom)} {pays_nom}")
@@ -128,22 +150,3 @@ for pays_nom in sorted(filtre["pays"].unique()):
                 st.success("✅")
             else:
                 st.warning("❌")
-
-# -------------------------
-# Sauvegarde
-# -------------------------
-if st.button("💾 Sauvegarder"):
-    df.to_csv("appStreamlit/data/coins.csv", index=False)
-    st.success("Sauvegardé !")
-
-# -------------------------
-# Stats
-# -------------------------
-st.subheader("📊 Statistiques")
-
-total = len(df)
-possedees = df["possedee"].sum()
-
-st.write(f"Total pièces : {total}")
-st.write(f"Possédées : {possedees}")
-st.write(f"Complétion : {round(possedees/total*100, 2)} %")
