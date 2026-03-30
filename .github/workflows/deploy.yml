@@ -3,10 +3,10 @@
 #
 # Variables (Settings > Secrets and variables > Actions > Variables) :
 #   DEPLOY_HOST   → IP ou hostname du serveur de prod  ← variable, pas secret !
-#   DEPLOY_PATH   → chemin sur le serveur (ex: /opt/piece-monnaie)
+#   DEPLOY_PATH   → chemin sur le serveur (ex: /opt/piece_monnaie)
+#   DEPLOY_USER   → utilisateur SSH (ex: deploy)
 #
 # Secrets (Settings > Secrets and variables > Actions > Secrets) :
-#   DEPLOY_USER   → utilisateur SSH (ex: cloug)
 #   DEPLOY_KEY    → clé SSH privée (contenu complet, BEGIN ... END)
 # ─────────────────────────────────────────────────────────────
 
@@ -80,6 +80,18 @@ jobs:
       url: http://${{ vars.DEPLOY_HOST }}:3039
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Copier docker-compose.yml sur le serveur
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ vars.DEPLOY_HOST }}
+          username: ${{ vars.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_KEY }}
+          source: "docker-compose.yml"
+          target: ${{ vars.DEPLOY_PATH }}
+
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
