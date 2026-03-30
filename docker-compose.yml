@@ -1,6 +1,6 @@
 services:
   piece-monnaie:
-    image: ${CI_REGISTRY_IMAGE:-piece-monnaie}:${IMAGE_TAG:-latest}
+    image: ${IMAGE_NAME:-ghcr.io/alicebouillet/piece_monnaie}:${IMAGE_TAG:-latest}
     container_name: piece-monnaie
     restart: unless-stopped
     ports:
